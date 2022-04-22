@@ -24,7 +24,17 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if (!user.pro) {
+    if (user.todos.length > 9) {
+      return response.status(404).json({error: "User todos exceeded the total availability"});
+    }
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 function checksTodoExists(request, response, next) {
