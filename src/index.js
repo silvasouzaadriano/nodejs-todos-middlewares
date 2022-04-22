@@ -27,8 +27,8 @@ function checksCreateTodosUserAvailability(request, response, next) {
   const { user } = request;
 
   if (!user.pro) {
-    if (user.todos.length > 9) {
-      return response.status(404).json({error: "User todos exceeded the total availability"});
+    if (user.todos.length >= 10) {
+      return response.status(403).json({error: "User todos exceeded the total availability"});
     }
   }
 
@@ -38,11 +38,43 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const user = users.find(user => user.username === username);
+
+  if (!user) {
+    return response.status(404).json({error: "User not found"});
+  }
+
+  if (!validate(id)) {
+    return response.status(400).json({error: "Todo ID is not a valid UUID"});
+  }
+
+  const todo = user.todos.find(todo => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({error: "Todo not found"});
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(user => user.id === id);
+
+  if (!user) {
+    return response.status(404).json({error: "User not found"});
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
